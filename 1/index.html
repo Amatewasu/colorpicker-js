@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Color picker with HTML5</title>
+		<meta charset="utf8" />
+	</head>
+	<body>
+		<!-- This color picker is open source !
+		License: CC-BY
+		Author: Amatewasu (Alexis Delrieu)
+		-->
+		<div style="text-align: center; vertical-align: middle; height: 100%;">
+			<canvas id="canvas" width="380" height="260" style="cursor: crosshair;"></canvas>
+		</div>
+		
+		<div style="position: absolute; bottom: 0px; left: 0px; margin: 0px; padding: 0px;">
+			<a rel="license" href="http://creativecommons.org/licenses/by/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/80x15.png" /></a>
+		</div>
+		
+		<div style="position: absolute; bottom: 0px; right: 0px; margin: 0px; padding: 0px;">
+			<a href="http://twitter.com/amatewasu"><img alt="twitter" src="twitter.png" /></a>
+		</div>
+		
+		<script>
+		var canvas = document.getElementById('canvas'),
+			ctx = canvas.getContext("2d"),
+			palette,
+			lastDraw = new Date().getTime(),
+			lastColor = {
+				red: 255,
+				green: 255,
+				blue: 255
+			},
+			pos = {
+				x: 0,
+				y: 0
+			},
+			hex = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", 'A', 'B', 'C', 'D', 'E', 'F'];
+		
+		function load(){
+			palette = new Image();
+			palette.onload = start;
+			palette.src = 'palette.png';
+		}
+		
+		function start(){
+			canvas.onclick = function(e){
+				var x = e.clientX - canvas.offsetLeft,
+					y = e.clientY - canvas.offsetTop;
+					
+				if (x >= 0 && x <= 275){
+					pos.x = x;
+					pos.y = y;
+					
+					var pixel = ctx.getImageData(pos.x, pos.y, 1, 1)
+					lastColor.red = pixel.data[0];
+					lastColor.green = pixel.data[1];
+					lastColor.blue = pixel.data[2];
+					
+					draw();
+				}
+			};
+			canvas.onmousemove = function(e){
+				circleColor(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop, false);
+			};
+			ctx.drawImage(palette, 0, 0);
+			
+			draw();
+		}
+		
+		function draw(){
+			ctx.clearRect(275, 0, 260, 260);
+			ctx.fillStyle = "rgb("+ lastColor.red +","+ lastColor.green +","+ lastColor.blue +")";
+			ctx.fillRect(275, 0, 130, 130);
+			ctx.fillStyle = "black";
+			ctx.fillRect(275, 130, 130, 130);
+			
+			ctx.textAlign = "center";
+			ctx.fillStyle = "red";
+			ctx.fillText(lastColor.red, 275 + Math.round(130 * (1/5)), 130 + Math.round(130 * (1/3)));
+			ctx.fillStyle = "green";
+			ctx.fillText(lastColor.green, 275 + Math.round(130 * (2/5)), 130 + Math.round(130 * (1/3)));
+			ctx.fillStyle = "blue";
+			ctx.fillText(lastColor.blue, 275 + Math.round(130 * (3/5)), 130 + Math.round(130 * (1/3)));
+			
+			ctx.fillStyle = "white";
+			ctx.fillText("#"+ toHex(lastColor.red) + toHex(lastColor.green) + toHex(lastColor.blue), 275 + Math.round(130 * (2/5)), 130 + Math.round(130 * (2/3)));
+			
+			circleColor(pos.x, pos.y, true);
+		}
+		
+		function toHex(n){
+			n = parseInt(n, 10);
+			return hex[(n - n % 16) / 16] + hex[n % 16];
+		}
+		
+		function circleColor(x, y, forceDraw){
+			if (new Date().getTime() > lastDraw + 50 || forceDraw == true){
+				if (x >= 0 && x <= 275){
+					lastDraw = new Date().getTime();
+					
+					pos.x = x;
+					pos.y = y;
+					
+					var pixel = ctx.getImageData(pos.x, pos.y, 1, 1)
+					lastColor.red = pixel.data[0];
+					lastColor.green = pixel.data[1];
+					lastColor.blue = pixel.data[2];
+					
+					ctx.clearRect(canvas.width - 35, canvas.height - 35, 35, 35);
+					ctx.fillStyle = "black";
+					ctx.fillRect(canvas.width - 35, canvas.height - 35, 35, 35);
+					
+					ctx.fillStyle = "rgb("+ lastColor.red +","+ lastColor.green +","+ lastColor.blue +")";
+					ctx.beginPath();
+					ctx.arc(canvas.width, canvas.height, 35, 0, (Math.PI/180) * 45, true);
+					ctx.fill();
+				}
+			}
+		}
+		
+		window.onload = load;
+		</script>
+	</body>
+</html>
